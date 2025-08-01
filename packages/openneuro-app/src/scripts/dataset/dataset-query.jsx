@@ -15,7 +15,7 @@ import DatasetRedirect from "../datalad/routes/dataset-redirect"
 import { trackAnalytics } from "../utils/datalad"
 import FourOFourPage from "../errors/404page"
 import FourOThreePage from "../errors/403page"
-import { getDatasetPage, getDraftPage } from "../queries/dataset"
+import { getDatasetPage, getDraftPage, getDatasetFilesPage, getDatasetAnalyticsPage } from "../queries/dataset"
 
 /**
  * Query to load and render dataset page - most dataset loading is done here
@@ -23,11 +23,21 @@ import { getDatasetPage, getDraftPage } from "../queries/dataset"
  * @param {Object} props.datasetId Accession number / id for dataset to query
  * @param {Object} props.draft Draft object
  */
-export const DatasetQueryHook = ({ datasetId, draft }) => {
+
+/* fairneuro
+ * added the extra queries getDatasetFiles and getDatasetAnalitics
+ */
+export const DatasetQueryHook = ({ datasetId, draft = false, page = "default" }) => {
   const navigate = useNavigate()
+  const queryMap = {
+    default: draft ? getDraftPage : getDatasetPage,
+    files: getDatasetFilesPage,
+    analytics: getDatasetAnalyticsPage,
+  }
+  const query = queryMap[page] || queryMap["default"]
   const { data, loading, error, fetchMore, stopPolling, startPolling } =
     useQuery(
-      draft ? getDraftPage : getDatasetPage,
+      query,
       {
         variables: { datasetId },
         fetchPolicy: "cache-and-network",
@@ -90,21 +100,26 @@ DatasetQueryHook.propTypes = {
  *
  * Expects to be a child of a react-router Route component with datasetId and snapshotId params
  */
-const DatasetQuery = () => {
+
+/*
+ * fairneuro
+ * added the page param for query distinction
+ */
+const DatasetQuery = ({ page = "default" }) => {
   const { datasetId, snapshotId } = useParams()
   const client = useApolloClient()
+  
   trackAnalytics(client, datasetId, {
     snapshot: true,
     tag: snapshotId,
     type: "views",
   })
+
   return (
     <>
       <DatasetRedirect />
-      <ErrorBoundaryAssertionFailureException
-        subject={"error in dataset query"}
-      >
-        <DatasetQueryHook datasetId={datasetId} draft={!snapshotId} />
+      <ErrorBoundaryAssertionFailureException subject={"error in dataset query"}>
+        <DatasetQueryHook datasetId={datasetId} draft={!snapshotId} page={page} />
       </ErrorBoundaryAssertionFailureException>
     </>
   )
@@ -113,6 +128,7 @@ const DatasetQuery = () => {
 DatasetQuery.propTypes = {
   match: PropTypes.object,
   history: PropTypes.object,
+  page: PropTypes.string,
 }
 
 export default DatasetQuery

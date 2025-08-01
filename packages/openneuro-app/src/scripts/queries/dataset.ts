@@ -110,3 +110,51 @@ export const getDraftPage = gql`
   ${DatasetQueryFragments.DATASET_METADATA}
   ${DATASET_COMMENTS}
 `
+
+/*
+ * Add files fragment for analytics route
+ */ 
+export const getDatasetAnalyticsPage = gql`
+  query dataset($datasetId: ID!) {
+    dataset(id: $datasetId) {
+      id
+      analytics {
+        downloads
+        views
+      }
+      ...DatasetMetadata
+      ...DatasetComments
+    }
+  }
+  ${DatasetQueryFragments.DATASET_METADATA}
+  ${DATASET_COMMENTS}
+`
+
+/*
+ * Simplified dataset page query
+ * only draft files and perms
+ */
+export const getDatasetFilesPage = gql`
+  query dataset($datasetId: ID!) {
+    dataset(id: $datasetId) {
+      id
+      draft {
+        id
+        files {
+          id
+          key
+          filename
+          size
+          directory
+          annexed
+          urls
+        }
+      }
+      ...DatasetDraft
+      ...DatasetPermissions
+    }
+  }
+  ${DatasetQueryFragments.DRAFT_FRAGMENT}
+  ${DatasetQueryFragments.PERMISSION_FRAGMENT}
+`
+

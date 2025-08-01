@@ -27,7 +27,10 @@ const AppRoutes: React.VoidFunctionComponent = () => (
     <Route path="/" element={<FrontPageContainer />} />
     <Route path="/faq" element={<FaqPage />} />
     <Route path="/keygen" element={<APIKey />} />
-    <Route path="/datasets/:datasetId/*" element={<DatasetQuery />} />
+	<Route path="/datasets/:datasetId" element={<DatasetQuery page="default" />} /> // draft and snapshot
+    <Route path="/datasets/:datasetId/files" element={<DatasetQuery page="files" />} /> // files
+    <Route path="/datasets/:datasetId/analytics" element={<DatasetQuery page="analytics" />} /> // analytics
+    <Route path="/datasets/:datasetId/*" element={<DatasetQuery page="default"/>} /> // catch all
     <Route path="/search/*" element={<SearchRoutes />} />
     <Route
       path="/admin/*"
